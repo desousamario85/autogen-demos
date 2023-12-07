@@ -270,11 +270,7 @@ with gr.Blocks() as demo:
 
     def get_description_text():
         return """
-        # Microsoft AutoGen: Multi-Round Human Interaction Chatbot Demo
-
-        This demo shows how to build a chatbot which can handle multi-round conversations with human interactions.
-
-        #### [AutoGen](https://github.com/microsoft/autogen) [Discord](https://discord.gg/pAbnFJrkgZ) [Paper](https://arxiv.org/abs/2308.08155) [SourceCode](https://github.com/thinkall/autogen-demos)
+        Welcome to SideKick
         """
 
     def update_config():
@@ -325,43 +321,6 @@ with gr.Blocks() as demo:
 
     description = gr.Markdown(get_description_text())
 
-    with gr.Row() as params:
-        txt_model = gr.Dropdown(
-            label="Model",
-            choices=[
-                "gpt-4",
-                "gpt-35-turbo",
-                "gpt-3.5-turbo",
-            ],
-            allow_custom_value=True,
-            value="gpt-35-turbo",
-            container=True,
-        )
-        txt_oai_key = gr.Textbox(
-            label="OpenAI API Key",
-            placeholder="Enter OpenAI API Key",
-            max_lines=1,
-            show_label=True,
-            container=True,
-            type="password",
-        )
-        txt_aoai_key = gr.Textbox(
-            label="Azure OpenAI API Key",
-            placeholder="Enter Azure OpenAI API Key",
-            max_lines=1,
-            show_label=True,
-            container=True,
-            type="password",
-        )
-        txt_aoai_base_url = gr.Textbox(
-            label="Azure OpenAI API Base",
-            placeholder="Enter Azure OpenAI Base Url",
-            max_lines=1,
-            show_label=True,
-            container=True,
-            type="password",
-        )
-
     chatbot = gr.Chatbot(
         [],
         elem_id="chatbot",
@@ -387,12 +346,7 @@ with gr.Blocks() as demo:
         respond,
         chatbot=chatbot,
         textbox=txt_input,
-        additional_inputs=[
-            txt_model,
-            txt_oai_key,
-            txt_aoai_key,
-            txt_aoai_base_url,
-        ],
+
         examples=[
             ["write a python function to count the sum of two numbers?"],
             ["what if the production of two numbers?"],
