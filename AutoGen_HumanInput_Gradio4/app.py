@@ -2,7 +2,6 @@ import os
 import sys
 import threading
 from itertools import chain
-
 import anyio
 import autogen
 import gradio as gr
@@ -10,10 +9,40 @@ from autogen import Agent, AssistantAgent, OpenAIWrapper, UserProxyAgent
 from autogen.code_utils import extract_code
 from gradio import ChatInterface, Request
 from gradio.helpers import special_args
+from postgres_da_ai_agent.modules.llm import llm
+from postgres_da_ai_agent.modules.db import SQLManager
+from sqlalchemy import create_engine, MetaData
+from sqlalchemy.orm import sessionmaker
+
+from dotenv import load_dotenv  
+
+load_dotenv()
 
 LOG_LEVEL = "INFO"
 TIMEOUT = 60
 
+# Variabes
+DB_URL = os.environ.get("DATABASE_URL")
+model = os.environ["MODEL"]
+aoai_key = os.environ["AZURE_OPENAI_API_KEY"] 
+aoai_base = os.environ["AZURE_OPENAI_API_BASE"]
+print(aoai_base);
+print(aoai_key);
+print(model)
+print(DB_URL)
+
+
+#Integrating SQL Databases Start
+# SQLAlchemy setup
+engine = create_engine(DB_URL)
+Session = sessionmaker(bind=engine)
+
+# Constants
+POSTGRES_TABLE_DEFINITIONS_CAP_REF = "TABLE_DEFINITIONS"
+RESPONSE_FORMAT_CAP_REF = "RESPONSE_FORMAT"
+SQL_DELIMITER = "---------"
+
+#Integrating SQL Databases End
 
 class myChatInterface(ChatInterface):
     async def _submit_fn(
@@ -34,6 +63,18 @@ class myChatInterface(ChatInterface):
         # history.append([message, response])
         return history, history
 
+    with SQLManager() as db:
+        db.connect_with_url(DB_URL)
+
+        table_definitions = db.get_table_definitions_for_prompt()
+        #print(table_definitions)
+
+        prompt = llm.add_cap_ref(
+            prompt,
+            f"Use these {POSTGRES_TABLE_DEFINITIONS_CAP_REF} to satisfy the database query.",
+            POSTGRES_TABLE_DEFINITIONS_CAP_REF,
+            table_definitions,
+        )
 
 with gr.Blocks() as demo:
 
@@ -291,18 +332,17 @@ with gr.Blocks() as demo:
         return config_list
 
     def set_params(model, oai_key, aoai_key, aoai_base):
-        os.environ["MODEL"] = model
-        os.environ["OPENAI_API_KEY"] = oai_key
-        os.environ["AZURE_OPENAI_API_KEY"] = aoai_key
-        os.environ["AZURE_OPENAI_API_BASE"] = aoai_base
+        model = os.environ["MODEL"]
+        aoai_key = os.environ["AZURE_OPENAI_API_KEY"] 
+        aoai_base = os.environ["AZURE_OPENAI_API_BASE"]
 
-    def respond(message, chat_history, model, oai_key, aoai_key, aoai_base):
-        set_params(model, oai_key, aoai_key, aoai_base)
+    def respond(message, chat_history):
         config_list = update_config()
         chat_history[:] = chatbot_reply(message, chat_history, config_list)
         if LOG_LEVEL == "DEBUG":
             print(f"return chat_history: {chat_history}")
         return ""
+
 
     config_list, assistant, userproxy = (
         [
