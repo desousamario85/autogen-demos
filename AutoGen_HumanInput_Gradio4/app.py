@@ -9,8 +9,8 @@ from autogen import Agent, AssistantAgent, OpenAIWrapper, UserProxyAgent
 from autogen.code_utils import extract_code
 from gradio import ChatInterface, Request
 from gradio.helpers import special_args
-from postgres_da_ai_agent.modules.llm import llm
-from postgres_da_ai_agent.modules.db import SQLManager
+from modules import llm
+from modules.db import SQLManager
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
 
@@ -63,18 +63,16 @@ class myChatInterface(ChatInterface):
         # history.append([message, response])
         return history, history
 
-    with SQLManager() as db:
-        db.connect_with_url(DB_URL)
+with SQLManager() as db:
+    db.connect_with_url(DB_URL)
 
-        table_definitions = db.get_table_definitions_for_prompt()
-        #print(table_definitions)
-
-        prompt = llm.add_cap_ref(
-            prompt,
-            f"Use these {POSTGRES_TABLE_DEFINITIONS_CAP_REF} to satisfy the database query.",
-            POSTGRES_TABLE_DEFINITIONS_CAP_REF,
-            table_definitions,
-        )
+    table_definitions = db.get_table_definitions_for_prompt()
+    prompt = llm.add_cap_ref(
+        "",  # Assuming you want to add the prompt to an empty string, replace it accordingly
+        f"Use these {POSTGRES_TABLE_DEFINITIONS_CAP_REF} to satisfy the database query.",
+        POSTGRES_TABLE_DEFINITIONS_CAP_REF,
+        table_definitions,
+    )
 
 with gr.Blocks() as demo:
 
