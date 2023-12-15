@@ -202,12 +202,21 @@ def respond(prompt):
             max_round=20,
         )
         manager = autogen.GroupChatManager(groupchat=groupchat, llm_config=azureai_config)
-        print(manager)
         user_proxy.initiate_chat(manager, clear_history=False, message=prompt)
-        chat_history = messages
+        chat_history = manager.chat_messages.values()
+        print(type(chat_history))
+        print(chat_history)
+
+
         # Convert the chat history to the correct format  
         # This assumes that chat_history is a list of dictionaries with keys 'name' and 'message'  
-        formatted_response = [[chat['name'], chat['message']] for chat in chat_history]  
+        formatted_response = [
+    [message.get('name'), message.get('content')]
+    for messages in chat_history  # chat_history is dict_values containing lists
+    for message in messages  # each item in chat_history is a list of messages
+    if 'content' in message  # make sure 'content' key exists in the message
+]
+
 
 
         return formatted_response  
