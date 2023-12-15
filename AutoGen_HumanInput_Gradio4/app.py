@@ -76,6 +76,42 @@ with SQLManager() as db:
 
 with gr.Blocks() as demo:
 
+    autogen_config_list = [
+    {
+        'api_type': 'azure',
+        'model': 'autogen',
+        'api_key': aoai_key,
+        'base_url': aoai_base,
+        "api_version": "2023-07-01-preview",
+    }
+    ]
+
+    azureai_config = {
+    #"use_cache": False,
+    "temperature": 0,
+    "config_list": autogen_config_list,
+    #"request_timeout": 120,
+    "functions": [
+        {
+            "name": "run_sql",
+            "description": "Run a SQL query against the SQL database",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "sql": {
+                        "type": "string",
+                        "description": "The SQL query to run",
+                    }
+                },
+                "required": ["sql"],
+            },
+        }
+        ],
+    }
+    function_map = {
+            "run_sql": db.run_sql,
+        }
+
     def flatten_chain(list_of_lists):
         return list(chain.from_iterable(list_of_lists))
 

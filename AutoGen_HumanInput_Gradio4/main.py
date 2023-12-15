@@ -204,12 +204,11 @@ def respond(prompt):
         manager = autogen.GroupChatManager(groupchat=groupchat, llm_config=azureai_config)
         print(manager)
         user_proxy.initiate_chat(manager, clear_history=False, message=prompt)
-
-        chat_history = manager.chat_messages
-        
+        chat_history = messages
         # Convert the chat history to the correct format  
         # This assumes that chat_history is a list of dictionaries with keys 'name' and 'message'  
         formatted_response = [[chat['name'], chat['message']] for chat in chat_history]  
+
 
         return formatted_response  
     except Exception as e:  
